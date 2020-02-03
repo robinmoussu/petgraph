@@ -23,7 +23,7 @@
 //!     (1, 4)]);
 //!
 //! // Find the shortest path from `1` to `4` using `1` as the cost for every edge.
-//! let node_map = dijkstra(&g, 1.into(), Some(4.into()), |_| 1);
+//! let node_map = dijkstra(&g, 1.into(), |&node, _| node == 4.into(), |_| 1);
 //! assert_eq!(&1i32, node_map.get(&NodeIndex::new(4)).unwrap());
 //!
 //! // Get the minimum spanning tree of the graph as a new graph, and check that

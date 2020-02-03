@@ -76,16 +76,18 @@ use crate::algo::Measure;
 ///      (g, 3),
 ///      (h, 4)
 ///     ].iter().cloned().collect();
-/// let res = dijkstra(&graph,b,None, |_| 1);
+/// let res = dijkstra(&graph, b, |_,_| false, |_| 1);
 /// assert_eq!(res, expected_res);
 /// // z is not inside res because there is not path from b to z.
 /// ```
-pub fn dijkstra<G, F, K>(graph: G, start: G::NodeId, goal: Option<G::NodeId>,
-                         mut edge_cost: F)
+pub fn dijkstra<G, F, K>(
+        graph: G,
+        start: G::NodeId,
+        stop: impl FnOnce(&G::NodeId, K) -> bool + Copy,
+        mut edge_cost: impl FnMut(G::EdgeRef) -> K)
     -> HashMap<G::NodeId, K>
     where G: IntoEdges + Visitable,
           G::NodeId: Eq + Hash,
-          F: FnMut(G::EdgeRef) -> K,
           K: Measure + Copy,
 {
     let mut visited = graph.visit_map();
@@ -98,9 +100,6 @@ pub fn dijkstra<G, F, K>(graph: G, start: G::NodeId, goal: Option<G::NodeId>,
     while let Some(MinScored(node_score, node)) = visit_next.pop() {
         if visited.is_visited(&node) {
             continue
-        }
-        if goal.as_ref() == Some(&node) {
-            break
         }
         for edge in graph.edges(node) {
             let next = edge.target();
@@ -121,6 +120,9 @@ pub fn dijkstra<G, F, K>(graph: G, start: G::NodeId, goal: Option<G::NodeId>,
                 }
             }
             visit_next.push(MinScored(next_score, next));
+            if stop(&node, next_score) {
+                break
+            }
         }
         visited.visit(node);
     }

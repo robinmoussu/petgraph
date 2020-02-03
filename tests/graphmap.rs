@@ -44,7 +44,7 @@ fn simple() {
 
     // check updated edge weight
     assert_eq!(gr.edge_weight(e, f), Some(&6));
-    let scores = dijkstra(&gr, a, None, |e| *e.weight());
+    let scores = dijkstra(&gr, a, |_,_| false, |e| *e.weight());
     let mut scores: Vec<_> = scores.into_iter().collect();
     scores.sort();
     assert_eq!(scores,
